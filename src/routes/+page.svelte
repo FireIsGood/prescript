@@ -32,10 +32,8 @@
           </label>
         </div>
         <div class="secret-control">
-          <button
-            class="secret-button"
-            onclick={resetPrescript}
-            disabled={!visible}>Reset prescript</button
+          <button class="secret-button" onclick={resetPrescript} disabled={!visible}
+            >Reset prescript</button
           >
         </div>
       </div>
@@ -50,6 +48,7 @@
 
 <style>
   main {
+    padding: 0.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -57,7 +56,7 @@
   }
 
   .top-section {
-    margin-top: 35vh;
+    margin-top: min(30vh, 50vw);
     display: flex;
   }
 
