@@ -169,11 +169,13 @@ function getPrefix(rng: RNG): string {
   const item2 = pickList(rng(), items);
   const sense = pickList(rng(), senses);
   const color = pickList(rng(), colors);
+  const emotion = pickList(rng(), emotions);
   const topic = getTopic(rng);
 
   const prefixes: string[] = [
     `without telling anyone, `,
     `telling only ${person}, `,
+    `ignoring ${person}, `,
     `using only what you ${sense}, `,
     `prepare for ${duration}, then `,
     `interrupt a conversation, `,
@@ -182,6 +184,7 @@ function getPrefix(rng: RNG): string {
     `when you feel ${color}, `,
     `when you feel safe, `,
     `when you feel in danger, `,
+    `when you feel ${emotion}, `,
     `when you reach your breaking point, `,
     `when you find ${item}, `,
     `when you find ${item} next to ${item2}, `,
@@ -194,17 +197,24 @@ function getPrefix(rng: RNG): string {
     `after you go to ${location}, `,
     `after you flip a coin, `,
     `after you go shopping, `,
-    `after you count to ${numberSmall}`,
+    `after you think about ${topic}, `,
+    `after you count to ${numberSmall} `,
     `before you go to ${location}, `,
     `while outside, `,
+    `over the internet, `,
+    `through your device, `,
+    `by only speaking to others, `,
+    `by only calling in favors, `,
     `while at home, `,
     `without prior preparation, `,
     `immediately after you finish reading this, `,
     `on the way to ${location}, `,
     `while at the home of ${person}, `,
     `before you eat breakfast, `,
-    `if you are bored, `,
+    `if you are ${emotion}, `,
     `before washing your hands, `,
+    `before drying off, `,
+    `before eating ${item}, `,
     `while you cook, `,
     `using ${item}, `,
     `once you ${sense} ${person}, `
@@ -214,6 +224,7 @@ function getPrefix(rng: RNG): string {
 
 function getMainTask(rng: RNG): string {
   const numberTiny = pickRange(rng(), 2, 9);
+  const numberSmall = pickRange(rng(), 1, 160);
   const numberWord = pickNumberWord(rng());
   const gameWord = pickList(rng(), games);
   const duration = getDuration(rng);
@@ -247,8 +258,13 @@ function getMainTask(rng: RNG): string {
 
   const tasks: string[] = [
     `call the ${numberWord} person you think of and talk about ${topic}${condDurationAdd}`,
-    `talk to ${person} about ${topic}`,
+    `talk to ${person} about ${topic}${condDurationAdd}`,
+    `think about ${topic}${condDurationAdd}`,
+    `consider ${topic}${condDurationAdd}`,
+    `do not think about ${topic}${condDurationAdd}`,
+    `debate ${topic} with ${person}`,
     `go to ${location}`,
+    `${verb} everyone at ${location}`,
     `obey the ${numberWord} ${person} you meet today`,
     `cook ${item} and consume it`,
     `cook your ${organ} and consume it`,
@@ -256,6 +272,7 @@ function getMainTask(rng: RNG): string {
     `observe ${person} for ${duration}`,
     `stalk ${person}`,
     `eliminate ${person}${condDurationAdd}`,
+    `ignore ${person}${condDurationAdd}`,
     `shove ${person}${condPersonAdd}`,
     `kiss ${person}${condPersonAdd}`,
     `hug ${person}${condPersonAdd}`,
@@ -263,7 +280,11 @@ function getMainTask(rng: RNG): string {
     `marry ${person}${condPersonAdd}`,
     `stab ${person}${condPersonAdd}`,
     `stab ${person} with ${item}`,
-    `lie to ${person}`,
+    `force ${person} to ${verb}${condPersonAdd}`,
+    `lie to ${person}${condPersonAdd}`,
+    `confess the truth to ${person}${condPersonAdd}`,
+    `execute order ${numberSmall}`,
+    `curl into a ball and ${verb}`,
     `befriend ${person}${condPersonAdd}`,
     `bring ${person} to ${location}`,
     `start a fight with ${person}`,
@@ -272,7 +293,10 @@ function getMainTask(rng: RNG): string {
     `play ${gameWord} with ${person}${condGameAdd}`,
     `remove the ${organ} of ${person}`,
     `clean the dishes${condDurationAdd}`,
+    `clean ${item}${condDurationAdd}`,
     `walk backwards${condDurationAdd}`,
+    `chase ${person}${condPersonAdd}`,
+    `scratch a symbol of your ${item} into ${item2}`,
     `wave to ${person}`,
     `wave to ${person} ${numberTiny} times`,
     `point towards ${person}`,
@@ -284,6 +308,9 @@ function getMainTask(rng: RNG): string {
     `buy ${item} which you will not use`,
     `server ${item} into ${numberTiny} pieces`,
     `use ${item} with ${item2}`,
+    `change ${item} into ${item2}`,
+    `return ${item} so you may obtain ${item2}`,
+    `destroy your own ${item}`,
     `throw ${item} at ${person}${condPersonAdd}`,
     `use ${item} on ${person}${condPersonAdd}`,
     `use ${person} on ${item}${condPersonAdd}`,
@@ -292,21 +319,37 @@ function getMainTask(rng: RNG): string {
     `shove ${person} into ${person2}${condPersonAdd}`,
     `${verb} ${person}${condPersonAdd}${condPersonAdd}`,
     `${verb} ${item}`,
-    `read ${numberTiny} books that you ${sense}`
+    `read ${numberTiny} books that you ${sense}`,
+    `do not return home for ${duration}`
   ];
   return pickList(rng(), tasks);
 }
 
 function getBetweenTask(rng: RNG): string {
+  const numberSmall = pickRange(rng(), 10, 500);
   const duration = getDuration(rng);
+  const person = getPerson(rng);
   const item = pickList(rng(), items);
 
   const tasks: string[] = [
     `. wait ${duration}, then `,
-    ` after ${duration}, `,
-    ` without looking, `,
-    ` using ${item}, `,
-    ` then, `
+    `. once you pass by ${person}, `,
+    `. if you do not see ${person}, `,
+    `. once you find your ${item}, `,
+    `. after ${duration}, `,
+    `. without looking, `,
+    `. using ${item}, `,
+    `. then, `,
+    `. only after you have confirmed the previous command, `,
+    `. ignoring the consequences, `,
+    `. tamping doubt, `,
+    `. without waiting, `,
+    `. without hesitation, `,
+    `. immediately, `,
+    `. at the same time, `,
+    `. after you recover your strength, `,
+    `. if you have a doubt still, `,
+    `. after counting to ${numberSmall}, `
   ];
   return pickList(rng(), tasks);
 }
@@ -329,6 +372,9 @@ function getFollowupTask(rng: RNG): string {
     `${verb} anyone who comes within ${numberSmall} meters for ${duration}`,
     `${verb} ${person}`,
     `break the joints of ${person}`,
+    `give ${person} ${numberSmall} ${item}`,
+    `give ${person} your ${item}`,
+    `take ${numberSmall} ${item} from ${person}`,
     `replace the ${organ} of ${person}`,
     `tell ${person} about ${item}`,
     `discuss ${topic}`,
@@ -347,6 +393,9 @@ function getFollowupTask(rng: RNG): string {
     `you may not discuss this with ${person}`,
     `take a shower`,
     `forget what you've done`,
+    `do not forgive yourself`,
+    `forgive yourself`,
+    `name ${numberSmall} things you ${sense} out loud`,
     `think about what you've done`,
     `ask for clarification from ${person}`,
     `pretend you are ${person}`,
@@ -382,6 +431,7 @@ function getLocation(rng: RNG): string {
     ` the ${numberWord} street`,
     ` the ${numberWord} turn left`,
     " a convenience store",
+    ` block ${letter}`,
     " home",
     " your basement",
     " the ocean",
@@ -424,6 +474,7 @@ function getConditionDuration(rng: RNG): string {
   const item = pickList(rng(), items);
   const person = getPerson(rng);
   const organ = pickList(rng(), organs);
+  const emotion = pickList(rng(), emotions);
 
   const conditions: string[] = [
     ` for only ${numberLarge} steps`,
@@ -431,20 +482,27 @@ function getConditionDuration(rng: RNG): string {
     ` if you still have two legs`,
     ` if you still have your ${organ}`,
     " if you feel like it",
+    ` if you feel still feel ${emotion}`,
     ` until someone is injured`,
+    ` until you are injured`,
     ` until your stomach rumbles ${numberSmall} times`,
-    " unless you get bored",
     " until you hear the third bird sings",
+    " unless you get bored",
+    ` unless you still have ${organ} after ${numberSmall} hours`,
     `, repeat if you see ${person}`,
     `, repeat if you see ${item}`,
     `, repeat if you still hate ${item}`,
-    `, repeat until ${person} notices`
+    `, repeat until ${person} notices`,
+    `. Do not stop until ${person} indicates otherwise`
   ];
   return pickList(rng(), conditions);
 }
 function getConditionPerson(rng: RNG): string {
   const numberSmall = pickRange(rng(), 1, 14);
   const organ = pickList(rng(), organs);
+  const item = pickList(rng(), items);
+  const verb = pickList(rng(), verbs);
+  const emotion = pickList(rng(), emotions);
   const duration = getDuration(rng);
   const topic = getTopic(rng);
 
@@ -456,16 +514,20 @@ function getConditionPerson(rng: RNG): string {
     ` until their ${organ} stops working`,
     ` unless your ${organ} disagrees`,
     ` until you are hungry`,
+    ` unless you are ${emotion}`,
     ` ${numberSmall} times`,
     ` for ${duration}`,
     ` and measure their sizes`,
     ` tell them about ${topic}`,
     ` be nice about it`,
+    ` without showing you feel ${emotion}`,
     ` without showing them your face`,
     ` without any regrets`,
     ` and never speak to them again`,
     ` and get their contact information`,
-    ` and regret what you've done`
+    ` and regret what you've done`,
+    ` who ${verb} you first`,
+    ` who ${verb} when a ${item} is placed on their ${organ}`
   ];
   return pickList(rng(), conditions);
 }
@@ -504,7 +566,9 @@ function getTaskModifier(rng: RNG): string {
 }
 
 function getPerson(rng: RNG): string {
+  const numberAge = pickRange(rng(), 1, 105);
   const numberWord = pickNumberWord(rng());
+
   const prefixIdentifiers: string[] = [
     "a tall",
     "an old",
@@ -525,15 +589,21 @@ function getPerson(rng: RNG): string {
     "a loyal",
     "an expensive",
     "a shy",
+    `a ${numberAge} year old`,
+    `every ${numberAge} year old`,
     `the ${numberWord}`,
     // Superlatives
     "the ugliest",
+    "the scariest",
+    "the strangest",
     "the creepiest",
     "the coldest",
     "the loudest",
     "the quietest",
     "the smartest",
     "the most fahsionable",
+    "the most punchable",
+    "the most lovable",
     "the most generous",
     "the most deranged",
     "the richest",
@@ -542,7 +612,8 @@ function getPerson(rng: RNG): string {
     "the most isolated",
     "the easiest to find",
     "the most difficult to track",
-    "the most creative"
+    "the most creative",
+    "the most influential"
   ];
 
   const prefix = pickList(rng(), prefixIdentifiers);
@@ -551,6 +622,7 @@ function getPerson(rng: RNG): string {
     maybePrefix = prefix + " ";
   }
 
+  const organType = pickList(rng(), organs);
   const types: string[] = [
     `someone you barely know`,
     `your best friend`,
@@ -558,8 +630,14 @@ function getPerson(rng: RNG): string {
     `your mother`,
     `your father`,
     `a drawing you've made`,
+    `a cat`,
+    `a graverobber`,
+    `a sophist`,
     `something alive`,
     `an acquaintance`,
+    `a shady stranger`,
+    `an old ally`,
+    `a sworn enemy`,
     `an old person`,
     `a city official`,
     `${maybePrefix}baker`,
@@ -572,11 +650,13 @@ function getPerson(rng: RNG): string {
     `${maybePrefix}member of the Ring`,
     `${maybePrefix}member of the Pinky`,
     `a backstreet rat`,
-    `an organ harvester`,
+    `a ${organType} harvester`,
     `a fish handler`
   ];
 
   const color = pickList(rng(), colors);
+  const organ = pickList(rng(), organs);
+  const sense = pickList(rng(), senses);
   const clothing = pickList(rng(), clothes);
   const item = pickList(rng(), items);
   const postfixIdentifiers: string[] = [
@@ -596,19 +676,35 @@ function getPerson(rng: RNG): string {
     ` who is still warm`,
     ` who is shivering`,
     ` who is bleeding out`,
-    ` who should be asleep`
+    ` who should be asleep`,
+    ` you remember the name of`,
+    ` you met at ${location}`,
+    ` you know owns ${item}`,
+    ` you hesitate to think of`,
+    ` you hate the most`,
+    ` you owe a debt to`,
+    ` you love`,
+    ` you hate`,
+    ` you feel no particular way towards`,
+    ` you ${sense} cannot see`,
+    ` you cannot see`,
+    ` with ${organ} in one piece`,
+    ` who just bought ${color} ${clothing}`
   ];
 
   // Usually just pick a person, otherwise pick a specific person
   let person = "";
-  if (rng() < 0.7) {
-    person = `${prefix} person`;
+  if (rng() < 0.4) {
+    if (rng() < 0.4) {
+      person += `the ${numberWord} `;
+    }
+    person += `${prefix} person`;
   } else {
     person = pickList(rng(), types);
   }
 
   // Postfix
-  if (rng() < 0.3) {
+  if (rng() < 0.2) {
     person += pickList(rng(), postfixIdentifiers);
   }
 
@@ -771,6 +867,7 @@ const items: string[] = [
   "a hammer",
   "a knife",
   "a sword",
+  "a blade",
   "a bow",
   "a spray paint can",
   "a flower",
@@ -883,6 +980,7 @@ const verbs: string[] = [
   "ignore",
   "excise",
   "embrace",
+  "resist",
   "drink"
 ];
 const senses: string[] = [
@@ -894,4 +992,25 @@ const senses: string[] = [
   "bump into",
   "think about",
   "want to meet"
+];
+const emotions: string[] = [
+  "happy",
+  "sad",
+  "scared",
+  "nostalgic",
+  "tired",
+  "bored",
+  "hesitatnt",
+  "lopsided",
+  "foolish",
+  "frustrated",
+  "deadly",
+  "upset",
+  "doom",
+  "cold",
+  "distant",
+  "bright",
+  "stellar",
+  "excited",
+  "trapped"
 ];
