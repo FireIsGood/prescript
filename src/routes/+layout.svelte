@@ -1,11 +1,32 @@
 <script lang="ts">
   import "../app.css";
+  import image from "$lib/assets/index_logo.png";
 
   let { children } = $props();
+
+  const title = "𝐏𝐫𝐞𝐬𝐜𝐫𝐢𝐩𝐭: 【𝐃𝐞𝐯𝐢𝐜𝐞】";
+  const description = "As the City Wills";
 </script>
 
 <svelte:head>
-  <title>𝐏𝐫𝐞𝐬𝐜𝐫𝐢𝐩𝐭: 【𝐃𝐞𝐯𝐢𝐜𝐞】</title>
+  <!-- Meta tags -->
+  <title>{title}</title>
+  <meta name="title" content={title} />
+  <meta name="description" content={description} />
+  <meta name="color-scheme" content="light dark" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={image} />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:title" content={title} />
+  <meta property="twitter:description" content={description} />
+  <meta property="twitter:image" content={image} />
+
   <!-- Font -->
   <link rel="preload" as="font" href="Perfect.woff" type="font/woff" crossorigin="anonymous" />
 
