@@ -1,0 +1,60 @@
+@font-face {
+  font-family: "Perfect";
+  src: url("Perfect.woff") format("woff");
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --background: #0a0a0f;
+  --background-low: #232329;
+  --background-high: #414147;
+  --text: #dce7f4;
+  --shadow-color: #dce7f4;
+  color-scheme: dark;
+}
+
+html {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: Perfect, code, monospace;
+  line-height: 1.1;
+}
+
+body {
+  margin: 0;
+}
+
+img {
+  display: block;
+}
+
+button {
+  background-color: unset;
+  border: unset;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+}
+
+textarea {
+  border: none;
+  overflow: auto;
+  outline: none;
+  font-family: inherit;
+  font-size: inherit;
+
+  background-color: var(--background-low);
+  width: 100%;
+  resize: vertical;
+}
+
+.text-shadow {
+  text-shadow:
+    0 0 8px rgb(235 251 255 / 50%),
+    0 0 24px rgb(151 232 255 / 25%),
+    0 0 36px rgb(0 154 198 / 60%);
+}
