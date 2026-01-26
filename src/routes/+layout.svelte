@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import image from "$lib/assets/index_logo.png";
+  import Rainy from "./rainy.svelte";
 
   let { children } = $props();
 
@@ -41,4 +42,41 @@
   <link rel="manifest" href="favicon/site.webmanifest" />
 </svelte:head>
 
-{@render children()}
+<main>
+  {@render children()}
+</main>
+<footer>
+  <p>Created by <a href="https://github.com/FireIsGood" target="_blank">FireIsGood</a></p>
+  <p><a href="https://github.com/FireIsGood/prescript" target="_blank">Source code</a></p>
+</footer>
+<Rainy />
+
+<style>
+  main {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  footer {
+    display: flex;
+    row-gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: auto;
+    padding: 1rem 1.5rem;
+    color: var(--text-muted);
+
+    opacity: 0.25;
+    transition: opacity 280ms ease;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    p {
+      margin-block: 0;
+    }
+  }
+</style>

@@ -11,25 +11,38 @@
 :root {
   --background: #0a0a0f;
   --background-low: #232329;
-  --background-high: #414147;
+  --background-high: #54545a;
   --text: #dce7f4;
+  --text-muted: #9ba5b1;
   --shadow-color: #dce7f4;
+  --main: #78a8dc;
+  --shadow: 0 0 8px -2px #000a, 0 0 4px -1px #000a;
+
   color-scheme: dark;
 }
 
 html {
   background-color: var(--background);
+  background: linear-gradient(to bottom, #29283180, var(--background));
+  background-attachment: fixed;
   color: var(--text);
   font-family: Perfect, code, monospace;
   line-height: 1.1;
+  height: 100%;
 }
 
 body {
   margin: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 img {
   display: block;
+  object-fit: contain;
+  max-width: 100%;
 }
 
 button {
@@ -50,6 +63,19 @@ textarea {
   background-color: var(--background-low);
   width: 100%;
   resize: vertical;
+}
+
+a {
+  color: inherit;
+  transition:
+    color 140ms ease,
+    text-decoration-color 70ms ease;
+  text-decoration-color: transparent;
+
+  &:hover {
+    color: var(--main);
+    text-decoration-color: currentColor;
+  }
 }
 
 .text-shadow {

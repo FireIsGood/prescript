@@ -613,7 +613,9 @@ function getPerson(rng: RNG): string {
     "the easiest to find",
     "the most difficult to track",
     "the most creative",
-    "the most influential"
+    "the most influential",
+    // Secret
+    "everyone"
   ];
 
   const prefix = pickList(rng(), prefixIdentifiers);

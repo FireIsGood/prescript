@@ -1,8 +1,26 @@
 <script lang="ts">
+  import { Howl } from "howler";
   import indexLogo from "$lib/assets/index_logo.png";
+  import buttonOpenSrc from "$lib/assets/button_open.mp3";
+  import buttonCloseSrc from "$lib/assets/button_close.mp3";
   import Prescript from "./prescript.svelte";
 
+  let buttonClose = new Howl({
+    src: [buttonCloseSrc],
+    volume: 0.3
+  });
+
+  let buttonOpen = new Howl({
+    src: [buttonOpenSrc],
+    volume: 0.3
+  });
+
   function toggleSecretMenu() {
+    if (secretMenuVisible) {
+      buttonOpen.play();
+    } else {
+      buttonClose.play();
+    }
     secretMenuVisible = !secretMenuVisible;
   }
 
@@ -15,45 +33,46 @@
   let visible: boolean = $state(false);
 </script>
 
-<main>
-  <section class="top-section">
-    <div class="image-holder">
-      <button class="secret-menu-toggle" ondblclick={toggleSecretMenu}>
+<section class="top-section">
+  <div class="image-holder">
+    <button class="secret-menu-toggle" ondblclick={toggleSecretMenu}>
+      <div class="image-overlay">
         <img src={indexLogo} alt="Index Logo" class="center-image" />
-      </button>
-    </div>
-    {#if secretMenuVisible}
-      <div class="secret-menu">
-        <h2>Weaver Controls</h2>
-        <div class="secret-control">
-          <label>
-            Force Text<br />
-            <textarea rows="3" bind:value={forceText}></textarea>
-          </label>
-        </div>
-        <div class="secret-control">
-          <button class="secret-button" onclick={resetPrescript} disabled={!visible}
-            >Reset prescript</button
-          >
-        </div>
+        {#each [0, 1, 2, 3] as i}
+          <img
+            src={indexLogo}
+            alt="Index Logo"
+            class="center-image glow-image"
+            style={`--delay: -${((i + 1) / 4) * 3600}ms`}
+          />
+        {/each}
       </div>
-    {/if}
-  </section>
-  <section>
-    <div class="prescript-text">
-      <Prescript {forceText} bind:visible />
+    </button>
+  </div>
+  <div class="secret-menu" class:hidden={!secretMenuVisible}>
+    <div class="secret-menu-inner">
+      <h2>Weaver Controls</h2>
+      <div class="secret-control">
+        <label>
+          Force Text<br />
+          <textarea rows="3" bind:value={forceText} class="secret-textarea"></textarea>
+        </label>
+      </div>
+      <div class="secret-control">
+        <button class="secret-button" onclick={resetPrescript} disabled={!visible}
+          >Reset prescript</button
+        >
+      </div>
     </div>
-  </section>
-</main>
+  </div>
+</section>
+<section>
+  <div class="prescript-text">
+    <Prescript {forceText} bind:visible />
+  </div>
+</section>
 
 <style>
-  main {
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
   .top-section {
     margin-top: min(30svh, 50vw);
     display: flex;
@@ -74,17 +93,60 @@
     -webkit-user-drag: none;
   }
 
+  .image-overlay {
+    display: grid;
+    > * {
+      grid-area: -1 / 1;
+    }
+  }
+
+  .glow-image {
+    animation: glow 3600ms infinite ease-out;
+    animation-delay: var(--delay);
+    mix-blend-mode: color;
+    z-index: -1;
+  }
+  @keyframes glow {
+    0% {
+      scale: 1;
+      opacity: 0.2;
+    }
+    60% {
+      scale: 1.35;
+    }
+    100% {
+      scale: 1.35;
+      opacity: 0;
+    }
+  }
+
   .secret-menu {
-    min-width: 35ch;
+    width: 35ch;
+    overflow: clip;
+    transition: width 240ms ease-in;
+
+    &.hidden {
+      width: 0;
+    }
+  }
+
+  .secret-menu-inner {
+    width: 35ch;
   }
 
   .secret-control {
     padding-bottom: 0.5rem;
   }
 
+  .secret-textarea {
+    box-shadow: var(--shadow);
+  }
+
   .secret-button {
     background-color: rgb(from var(--background-high) r g b / 0.8);
+    box-shadow: var(--shadow);
     padding: 0.25em 0.75em;
+
     &:hover {
       background-color: rgb(from var(--background-high) r g b / 0.9);
     }
@@ -92,6 +154,7 @@
       background-color: var(--background-high);
     }
     &:disabled {
+      color: rgb(from var(--text-muted) r g b / 0.6);
       background-color: rgb(from var(--background-high) r g b / 0.6);
     }
   }
