@@ -8,6 +8,11 @@
   box-sizing: border-box;
 }
 
+/* EVIL AESTHETIC THING */
+*::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   --background: #0a0a0f;
   --background-low: #232329;
