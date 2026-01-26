@@ -52,11 +52,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh;
   }
 
   .top-section {
-    margin-top: min(30vh, 50vw);
+    margin-top: min(30svh, 50vw);
     display: flex;
   }
 
