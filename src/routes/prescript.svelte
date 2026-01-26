@@ -3,16 +3,23 @@
   import beepStartSrc from "$lib/assets/beepstart.mp3";
   import beepRepeatSrc from "$lib/assets/beep.mp3";
   import buttonPressSrc from "$lib/assets/button.mp3";
-  import { getPrescript } from "./city-rumbles";
+  import { getPrescript, type RumbleType } from "./city-rumbles";
 
   let {
     forceText,
-    visible = $bindable(false)
+    forceID
   }: {
     forceText?: string;
-    visible?: boolean;
+    forceID?: string;
   } = $props();
+  let name: string = $state("");
   let text: string = $state("");
+  let rumbleSeed: string = $state("");
+  // Evil fake state machine
+  let visible: boolean = $state(false);
+  let inputtingName: boolean = $state(false); // When a name is being input
+  let transientInput: boolean = $state(false); // When a name should not be remembered
+  let introDone: boolean = $state(false); // When the intro "to name" finishes
   let visibleDone: boolean = $state(false); // When the animation finishes
 
   function remap(
@@ -56,7 +63,9 @@
     const textScrollDuration = text.length * (1000 / speed);
     const duration = textScrollDuration + pauseDuration;
 
-    if (sound) beepStart.play();
+    if (pauseDuration > 0 && sound) {
+      beepStart.play();
+    }
 
     return {
       duration,
@@ -96,12 +105,51 @@
     };
   }
 
-  function showPrescript() {
+  // Gets name if not known to load up a daily seed
+  // For Other option makes it ask always and not remember
+  function showSeeded(forOther: boolean = false) {
+    transientInput = forOther;
+
+    // Get name from local storage
+    name = localStorage.getItem("PROXY_NAME") ?? "";
+
+    if (!forOther && name) {
+      showPrescript("seeded", name);
+      return;
+    }
+
+    // Clear name for Proselytizing
+    if (forOther) {
+      name = "";
+    }
+
+    // Ask for name
+    inputtingName = true;
+  }
+
+  function submitName() {
+    inputtingName = false;
+    if (!transientInput) {
+      localStorage.setItem("PROXY_NAME", name);
+    }
+    showPrescript("seeded", name);
+  }
+
+  function showPrescript(rumbleType: RumbleType, seed: string | undefined = undefined) {
     if (forceText) {
       text = forceText;
+    } else if (forceID) {
+      const id = parseInt(forceID, 36);
+      const res = getPrescript(rumbleType, seed, id);
+      text = res.text;
+      rumbleSeed = res.rumbleSeed;
     } else {
-      text = getPrescript();
+      const res = getPrescript(rumbleType, seed);
+      text = res.text;
+      rumbleSeed = res.rumbleSeed;
     }
+
+    name = seed ?? "";
     visible = true;
   }
 
@@ -116,7 +164,38 @@
   });
 </script>
 
-{#if visible}
+{#if visible && name}
+  <!-- weird transition workaround -->
+  <p
+    in:prescript={{ pauseDuration: 0 }}
+    onintrostart={() => {
+      introDone = false;
+      visibleDone = false;
+    }}
+    onintroend={() => setTimeout(() => (introDone = true), 480)}
+    class="name-line text-shadow"
+  >
+    【To {name}】
+  </p>
+  {#if introDone}
+    <p class="fade-in text-shadow" in:prescript={{}} onintroend={() => (visibleDone = true)}>
+      {text}
+    </p>
+  {/if}
+  {#if visibleDone}
+    <p class="prescript-meta fade-in">
+      ID: {rumbleSeed} - {new Date().getUTCFullYear()}/{new Date().getUTCMonth() +
+        1}/{new Date().getUTCDate()}
+    </p>
+    <button
+      in:prescript={{ pauseDuration: 360, sound: false, speed: 12 }}
+      class="proceed text-shadow"
+      onclick={resetPrescript}
+    >
+      &gt;&gt;&gt;
+    </button>
+  {/if}
+{:else if visible}
   <p
     class="fade-in text-shadow"
     in:prescript={{}}
@@ -126,6 +205,9 @@
     {text}
   </p>
   {#if visibleDone}
+    <p class="prescript-meta fade-in">
+      ID: {rumbleSeed}
+    </p>
     <button
       in:prescript={{ pauseDuration: 360, sound: false, speed: 12 }}
       class="proceed text-shadow"
@@ -134,12 +216,37 @@
       &gt;&gt;&gt;
     </button>
   {/if}
+{:else if inputtingName}
+  <div class="name-input">
+    <label>
+      Name
+      <br />
+      <input class="fade-in" type="text" bind:value={name} />
+    </label>
+    <button class="receive text-shadow" onclick={submitName} disabled={name.trim() === ""}>
+      <div class="button-arrow-left">&gt;</div>
+      SUBMIT
+      <div class="button-arrow-right">&lt;</div>
+    </button>
+  </div>
 {:else}
-  <button class="receive text-shadow" onclick={showPrescript}>
-    <div class="button-arrow-left">&gt;</div>
-    RECEIVE
-    <div class="button-arrow-right">&lt;</div>
-  </button>
+  <div class="prescript-options">
+    <button class="receive text-shadow" onclick={() => showPrescript("random")}>
+      <div class="button-arrow-left">&gt;</div>
+      INSTANT
+      <div class="button-arrow-right">&lt;</div>
+    </button>
+    <button class="receive text-shadow" onclick={() => showSeeded()}>
+      <div class="button-arrow-left">&gt;</div>
+      DAILY
+      <div class="button-arrow-right">&lt;</div>
+    </button>
+    <button class="receive text-shadow" onclick={() => showSeeded(true)}>
+      <div class="button-arrow-left">&gt;</div>
+      PROSELYTIZE
+      <div class="button-arrow-right">&lt;</div>
+    </button>
+  </div>
 {/if}
 
 <style>
@@ -147,21 +254,49 @@
     margin: 0;
   }
 
+  .name-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .prescript-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+  }
+
   .receive {
     display: flex;
-    padding: 0.75em 0.75em;
-    margin-block: -0.75em;
+    padding: 0.25em 0.75em;
     cursor: pointer;
     transition: opacity 140ms ease;
-    opacity: 0.9;
+    opacity: 0.5;
 
-    &:hover {
+    .button-arrow-right,
+    .button-arrow-left {
+      opacity: 0;
+      user-select: none;
+      transition: opacity 140ms ease;
+    }
+
+    &:is(:hover, :focus):not(:disabled) {
       opacity: 1;
+
+      .button-arrow-right,
+      .button-arrow-left {
+        opacity: 1;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
     }
   }
 
   .button-arrow-left {
-    user-select: none;
     animation: float-left 2400ms infinite ease-in-out;
   }
   @keyframes float-left {
@@ -174,7 +309,6 @@
     }
   }
   .button-arrow-right {
-    user-select: none;
     animation: float-right 2400ms infinite ease-in-out;
   }
   @keyframes float-right {
@@ -187,18 +321,28 @@
     }
   }
 
+  .name-line {
+    margin-bottom: 0.5em;
+  }
+
   .proceed {
     padding: 0.5em 0.5em;
     margin-block: -0.5em;
-    margin-top: 0.75rem;
+    margin-top: 1.5rem;
     font-size: 0.8em;
     cursor: pointer;
-    opacity: 0.5;
+    opacity: 0.6;
     transition: opacity 240ms ease;
     animation: fade-in-partial 560ms ease-out;
 
-    &:hover {
+    &:hover,
+    &:focus {
       opacity: 1;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
     }
   }
   @keyframes fade-in-partial {
@@ -221,5 +365,13 @@
     to {
       opacity: 1;
     }
+  }
+  .prescript-meta {
+    color: rgb(from var(--text) r g b / 0.25);
+    font-size: 0.625em;
+    margin-top: 1rem;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-delay: 360ms;
   }
 </style>

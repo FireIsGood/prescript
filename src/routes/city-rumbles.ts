@@ -9,17 +9,56 @@ function mulberry32(a: number) {
   };
 }
 
+// returns a 32 bit integer
+function cyrb53(str: string, seed = 0): number {
+  let h1 = 0xdeadbeef ^ seed,
+    h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+
 type RNG = () => number;
+export type RumbleType = "random" | "seeded";
 
-function makeCityRumbler(): RNG {
+function makeCityRumbler(
+  type: RumbleType,
+  seed: string | undefined = undefined,
+  id: number | undefined = undefined
+): { rng: RNG; rumbleSeed: number } {
+  if (id) {
+    return { rng: mulberry32(id), rumbleSeed: id };
+  }
+
   const date = new Date();
-  const day = date.getDate();
-  const month = date.getMonth();
+  const day = date.getUTCDate();
+  const month = date.getUTCMonth();
   const year = date.getUTCFullYear();
-  const daySeed = day + month + year;
-  const timeSeed = date.getMilliseconds();
+  const daySeed = cyrb53(`${day}|${month}|${year}`);
+  let hashSeed = 1;
+  switch (type) {
+    case "seeded":
+      if (seed) {
+        hashSeed = cyrb53(seed);
+        break;
+      }
+    // Fall back to random if we don't get a seed in seeded mode
+    // Agony
+    case "random":
+      hashSeed = id ?? date.getMilliseconds();
+      break;
+  }
 
-  return mulberry32(daySeed * timeSeed);
+  const parsedSeed = (daySeed * hashSeed) % Number.MAX_SAFE_INTEGER;
+  return { rng: mulberry32(parsedSeed), rumbleSeed: parsedSeed };
 }
 
 function pickList(num: number, list: string[]) {
@@ -87,8 +126,16 @@ function fixPluralize(num: number): string {
   return "";
 }
 
-export function getPrescript(): string {
-  const cityRumbler = makeCityRumbler();
+// Takes an optional seed
+// Returns text and a hex representation of the seed's hashed value
+export function getPrescript(
+  rumbleType: RumbleType,
+  seed: string | undefined = undefined,
+  id: number | undefined = undefined
+): { text: string; rumbleSeed: string } {
+  const res = makeCityRumbler(rumbleType, seed, id);
+  const cityRumbler = res.rng;
+  const rumbleSeed = res.rumbleSeed.toString(36);
 
   const existing = [
     "To Lala. Put three needles in Lily’s birthday cake by noon tomorrow.",
@@ -156,7 +203,7 @@ and eat it with a fork.`,
   let cleanPrescript = prescript.join("") + ".";
   cleanPrescript = fixCapitalization(cleanPrescript);
 
-  return cleanPrescript;
+  return { text: cleanPrescript, rumbleSeed };
 }
 
 function getPrefix(rng: RNG): string {

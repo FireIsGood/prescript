@@ -24,13 +24,17 @@
     secretMenuVisible = !secretMenuVisible;
   }
 
-  function resetPrescript() {
-    visible = false;
+  function resetName() {
+    const res = confirm("Are you sure? You will have to re-input next Daily");
+    if (!res) return;
+
+    localStorage.removeItem("PROXY_NAME");
+    alert("Name reset");
   }
 
   let secretMenuVisible: boolean = $state(false);
   let forceText: string = $state("");
-  let visible: boolean = $state(false);
+  let forceID: string = "";
 </script>
 
 <section class="top-section">
@@ -59,16 +63,20 @@
         </label>
       </div>
       <div class="secret-control">
-        <button class="secret-button" onclick={resetPrescript} disabled={!visible}
-          >Reset prescript</button
-        >
+        <label
+          >Force ID<br />
+          <input type="text" bind:value={forceID} class="secret-input" size="16" />
+        </label>
+      </div>
+      <div class="secret-control">
+        <button class="secret-button" onclick={resetName}>Reset your name</button>
       </div>
     </div>
   </div>
 </section>
 <section>
   <div class="prescript-text">
-    <Prescript {forceText} bind:visible />
+    <Prescript {forceText} {forceID} />
   </div>
 </section>
 
