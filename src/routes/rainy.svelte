@@ -40,14 +40,14 @@
     ctx.clearRect(0, 0, ctx.canvas.clientWidth * 2, ctx.canvas.clientHeight * 2);
 
     // Rain
-    const radius = 400;
+    const lightnessRadius = 400;
     const gradient = ctx.createRadialGradient(
       0.5 * ctx.canvas.clientWidth,
       0.5 * ctx.canvas.clientHeight,
       0,
       0.5 * ctx.canvas.clientWidth,
       0.5 * ctx.canvas.clientHeight,
-      radius * 2
+      lightnessRadius * 2
     );
     gradient.addColorStop(0, "#4a7a96");
     gradient.addColorStop(0.2, "#333f58");
@@ -72,7 +72,8 @@
     }
 
     // Circle
-    const circleRadius = 400;
+    const smallAxis = Math.min(ctx.canvas.width, ctx.canvas.height);
+    const circleRadius = Math.min(smallAxis * 0.75, 400);
     ctx.lineWidth = 2;
     ctx.strokeStyle = "#333f5880";
     const offset = { x: 0.5, y: 0.5 };

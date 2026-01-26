@@ -74,7 +74,7 @@
 
 <style>
   .top-section {
-    margin-top: min(30svh, 50vw);
+    margin-top: min(30svh, 75vw);
     display: flex;
   }
 
@@ -122,11 +122,16 @@
 
   .secret-menu {
     width: 35ch;
+    height: calc-size(auto, size); /* Modern CSS magic */
     overflow: clip;
-    transition: width 240ms ease-in;
+    transition:
+      height 240ms ease-in,
+      width 240ms ease-in;
+    transition-behavior: allow-discrete;
 
     &.hidden {
       width: 0;
+      height: 0;
     }
   }
 
@@ -163,5 +168,18 @@
     max-width: 50ch;
     text-align: center;
     font-size: 1.5em;
+    --min-fs: 1;
+    --max-fs: 1.5;
+    --min-vw: 10;
+    --max-vw: 45;
+
+    --min-fs-rem: var(--min-fs) * 1rem;
+    --max-fs-rem: var(--max-fs) * 1rem;
+    --min-vw-rem: var(--min-vw) * 1rem;
+
+    --slope: (var(--max-fs) - var(--min-fs)) * (100vw - var(--min-vw-rem)) /
+      (var(--max-vw) - var(--min-vw));
+
+    font-size: clamp(var(--min-fs-rem), var(--min-fs-rem) + var(--slope), var(--max-fs-rem));
   }
 </style>
