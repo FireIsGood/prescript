@@ -53,11 +53,11 @@ function makeCityRumbler(
     // Fall back to random if we don't get a seed in seeded mode
     // Agony
     case "random":
-      hashSeed = id ?? date.getMilliseconds();
+      hashSeed = id ?? Date.now();
       break;
   }
 
-  const parsedSeed = (daySeed * hashSeed) % Number.MAX_SAFE_INTEGER;
+  const parsedSeed = ((daySeed + 1) * (hashSeed + 1)) % Number.MAX_SAFE_INTEGER;
   return { rng: mulberry32(parsedSeed), rumbleSeed: parsedSeed };
 }
 
