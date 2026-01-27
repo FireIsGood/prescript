@@ -33,6 +33,10 @@
     alert("Name reset");
   }
 
+  function resetDaily() {
+    localStorage.removeItem("LAST_OPENED");
+  }
+
   let secretMenuVisible: boolean = $state(false);
   let forceText: string = $state("");
   let forceID: string = $state("");
@@ -72,6 +76,9 @@
         </div>
         <div class="secret-control">
           <button class="secret-button" onclick={resetName}>Reset your name</button>
+        </div>
+        <div class="secret-control">
+          <button class="secret-button" onclick={resetDaily}>Reset daily timer</button>
         </div>
       </div>
     </div>
