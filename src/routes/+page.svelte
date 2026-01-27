@@ -34,7 +34,7 @@
 
   let secretMenuVisible: boolean = $state(false);
   let forceText: string = $state("");
-  let forceID: string = "";
+  let forceID: string = $state("");
 </script>
 
 <section class="top-section">
