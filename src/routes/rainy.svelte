@@ -1,6 +1,6 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { remap } from "$lib/util";
+  import { drawPathSmooth, remap, type Curve, type Point } from "$lib/util";
   import { onMount } from "svelte";
   import { fade } from "svelte/transition";
 
@@ -39,8 +39,9 @@
   }
 
   function process(delta: DOMHighResTimeStamp) {
-    // Clear previous frame
+    // Initialize
     ctx.clearRect(0, 0, ctx.canvas.clientWidth * 2, ctx.canvas.clientHeight * 2);
+    ctx.reset();
 
     // Rain
     const lightnessRadius = 400;
@@ -74,6 +75,77 @@
       drop.y = (drop.y + 1) % 1;
     }
 
+    // Randomized lines
+    const curves: Curve[] = [
+      [
+        // Top left
+        { x: -0.1, y: 0.85 },
+        { x: 0.02, y: 0.42 },
+        { x: 0.22, y: 0.13 },
+        { x: 0.18, y: -0.1 }
+      ],
+      [
+        // Top left
+        { x: -0.2, y: 0.48 },
+        { x: 0.18, y: 0.34 },
+        { x: 0.12, y: 0.12 },
+        { x: 0.36, y: -0.2 }
+      ],
+      [
+        // Bottom left
+        { x: -0.2, y: 0.62 },
+        { x: 0.19, y: 0.61 },
+        { x: 0.07, y: 0.84 },
+        { x: 0.24, y: 1.1 }
+      ],
+      [
+        // Top right
+        { x: 1.2, y: 0.11 },
+        { x: 0.89, y: 0.25 },
+        { x: 0.68, y: 0.13 },
+        { x: 0.42, y: 0.15 },
+        { x: 0.27, y: -0.1 }
+      ],
+      [
+        // Middle right 1
+        { x: 0.54, y: 1.1 },
+        { x: 0.84, y: 0.83 },
+        { x: 0.78, y: 0.28 },
+        { x: 1.2, y: -0.1 }
+      ],
+      [
+        // Middle right 2
+        { x: 1.2, y: 0.32 },
+        { x: 0.89, y: 0.47 },
+        { x: 0.97, y: 0.91 },
+        { x: 0.62, y: 1.1 }
+      ],
+      [
+        // Bottom
+        { x: -0.1, y: 0.79 },
+        { x: 0.37, y: 0.79 },
+        { x: 0.76, y: 1.2 }
+      ]
+    ].map((c) => c.map(screenSpace));
+
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.25;
+    ctx.shadowBlur = 9;
+    ctx.shadowColor = "#4a7a9640";
+    ctx.strokeStyle = "#333f58";
+    ctx.setLineDash([1200, 8800]);
+    const lineSpeed = 0.12;
+    const offsetSize = 5830;
+    for (let i = 0; i < curves.length; i++) {
+      const curve = curves[i];
+      ctx.lineDashOffset = -_clock * lineSpeed + i * offsetSize - 2800;
+      drawPathSmooth(ctx, curve, 1.25);
+    }
+    ctx.lineDashOffset = 0;
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
     // Circle
     const smallAxis = Math.min(ctx.canvas.width, ctx.canvas.height);
     const circleRadius = Math.min(smallAxis * 0.75, 400);
@@ -96,6 +168,13 @@
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
+  }
+
+  export function screenSpace(p: Point): Point {
+    return {
+      x: p.x * ctx.canvas.clientWidth,
+      y: p.y * ctx.canvas.clientHeight
+    };
   }
 
   function createRain(count: number = 1) {
