@@ -514,35 +514,66 @@ function getLocation(rng: RNG): string {
   const color = pickList(rng(), colors);
 
   const locations: string[] = [
-    ` Walmart`,
-    ` Ham Ham Pang Pang`,
-    ` a convenience store`,
-    ` a local mall`,
-    ` a local tavern`,
-    ` a milling stone`,
-    ` a nearby alley`,
-    ` a nearby convention hall`,
-    ` home`,
-    ` school`,
-    ` the bar`,
-    ` the closest office`,
-    ` the closest school`,
-    ` the ocean`,
-    ` your basement`,
-    ` your office`,
-    ` your car`,
-    ` a ${color} place`,
-    ` a ${emotion} place`,
-    ` a place no one has entered for ${duration}`,
-    ` block ${letter}`,
-    ` the ${letter} Corp backstreets`,
-    ` the ${letter} Corp nest`,
-    ` the ${numberWord} intersection`,
-    ` the ${numberWord} street`,
-    ` the ${numberWord} turn left`,
-    ` the house of ${person}`
+    // Brand
+    `Ham Ham Pang Pang`,
+    `Walmart`,
+    // Basic
+    `alley`,
+    `attic`,
+    `bar`,
+    `basement`,
+    `car`,
+    `convenience store`,
+    `convention hall`,
+    `home`,
+    `house`,
+    `lake`,
+    `mall`,
+    `tavern`,
+    `milling stone`,
+    `ocean`,
+    `office`,
+    `park`,
+    `school`,
+    `school`,
+    `shed`,
+    // Special
+    `${color} place`,
+    `${emotion} place`,
+    `place no one has entered for ${duration}`,
+    `place you don't visit often`,
+    `place you don't wish to visit`,
+    `place you dilike`,
+    `place you often linger around`,
+    `block ${letter}`,
+    `${letter} Corp backstreets`,
+    `${letter} Corp nest`,
+    `${numberWord} intersection`,
+    `${numberWord} street`,
+    `${numberWord} turn left`
   ];
-  return pickList(rng(), locations);
+
+  const location = pickList(rng(), locations);
+  let locationArticle = "aeiou".split("").includes(location[0])
+    ? "an " + location
+    : "a " + location;
+  const articles: string[] = [
+    `${locationArticle}`,
+    `${locationArticle} in ${letter} corp`,
+    `a local ${location}`,
+    `a nearby ${location}`,
+    `the ${location} of ${person}`,
+    `the closest ${location}`,
+    `the first ${location} you think of`,
+    `the most expensive ${location}`,
+    `the cheapest ${location}`,
+    `the nearest ${location}`,
+    `your ${location}`
+  ];
+
+  const prefixedLocation = pickList(rng(), articles);
+
+  return prefixedLocation;
 }
 
 function getConditionGame(rng: RNG): string {
