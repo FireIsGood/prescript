@@ -62,8 +62,8 @@
     const dropSize = 4;
     for (const drop of rain) {
       ctx.fillRect(
-        -dropSize / 2 + drop.x * ctx.canvas.clientWidth,
-        -dropSize / 2 + drop.y * ctx.canvas.clientHeight + 20,
+        -dropSize / 2 + remap(drop.x, 0, 1, -0.1, 1.1) * ctx.canvas.clientWidth,
+        -dropSize / 2 + remap(drop.y, 0, 1, -0.1, 1.1) * ctx.canvas.clientHeight,
         dropSize * 0.8,
         dropSize
       );
