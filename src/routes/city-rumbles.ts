@@ -727,7 +727,6 @@ function getPerson(rng: RNG): string {
     ` who is bleeding out`,
     ` who should be asleep`,
     ` you remember the name of`,
-    ` you met at ${location}`,
     ` you know owns ${item}`,
     ` you hesitate to think of`,
     ` you hate the most`,
