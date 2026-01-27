@@ -8,6 +8,7 @@
   import buttonPressSrc from "$lib/assets/button.mp3";
   import { getPrescript, type RumbleType } from "./city-rumbles";
   import { browser } from "$app/environment";
+  import { remap } from "$lib/util";
 
   type PrescriptState = [
     //
@@ -63,16 +64,6 @@
     const duration = dayjs.duration(dayjs(timeLastOpened).add(1, "day").diff());
     return duration.asSeconds() > 0 ? duration.format("HH:mm:ss") : null;
   });
-
-  function remap(
-    value: number,
-    lowIn: number,
-    highIn: number,
-    lowOut: number,
-    highOut: number
-  ): number {
-    return lowOut + (value - lowIn) * ((highOut - lowOut) / (highIn - lowIn));
-  }
 
   let beepStart = new Howl({
     src: [beepStartSrc],

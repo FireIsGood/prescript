@@ -1,5 +1,9 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
+  import { remap } from "$lib/util";
   import { onMount } from "svelte";
+  import { fade } from "svelte/transition";
+  import { getPrescript } from "./city-rumbles";
 
   // Individual droplets. xy are positions from 0 to 1 like a shader.
   type Raindrop = {
@@ -9,8 +13,8 @@
   };
 
   let canvas: HTMLCanvasElement;
-  let canvasWidth: number = 100;
-  let canvasHeight: number = 100;
+  let canvasWidth: number = $state(100);
+  let canvasHeight: number = $state(100);
   let ctx: CanvasRenderingContext2D;
   let rain: Raindrop[] = [];
 
@@ -128,6 +132,83 @@
     [0.32, 0.92, 0.43],
     [0.86, 0.92, 0.48]
   ];
+
+  type RandomText = { id: number; x: number; y: number; r: number; t: string };
+  let randomTextList = $state<RandomText[]>([]);
+
+  function createRandomText() {
+    if (!browser) return;
+    if (!document.hasFocus()) return;
+
+    // Random text
+    let t = "";
+    if (Math.random() < 0.001) {
+      t = "No one will believe you."; // gaslighting
+    } else {
+      const randomCharacterList = "01";
+      const length = Math.floor(remap(Math.random(), 0, 1, 4, 32));
+      for (let i = 0; i < length; i++) {
+        t += randomCharacterList.charAt(Math.floor(Math.random() * randomCharacterList.length));
+      }
+    }
+
+    // Random position
+    // Must be a certain radius away from the center
+    let x = 0;
+    let y = 0;
+    let distanceFromCenter = 0;
+    let tries = 0;
+    while (distanceFromCenter < 550 && tries++ < 100) {
+      x = remap(Math.random(), 0, 1, -128, window.innerWidth - 128);
+      y = remap(Math.random(), 0, 1, -128, window.innerHeight + 128);
+      distanceFromCenter = Math.min(
+        Math.abs(window.innerWidth / 2 - x) + Math.abs(window.innerHeight / 2 - y), // Left side
+        Math.abs(window.innerWidth / 2 - (x + t.length * 8)) + Math.abs(window.innerHeight / 2 - y) // Right side
+      );
+    }
+
+    const text: RandomText = {
+      id: Math.random(),
+      x,
+      y,
+      r: remap(Math.random(), 0, 1, -15, 15),
+      t
+    };
+    randomTextList.push(text);
+  }
+
+  function removeRandomText(id: number) {
+    const i = randomTextList.findIndex((t) => t.id === id);
+    if (i !== -1) {
+      randomTextList.splice(i, 1);
+    }
+  }
+
+  function typewriter(node: HTMLElement, { speed = 1 }: { speed?: number }) {
+    const valid = node.childNodes.length === 1 && node.childNodes[0].nodeType === Node.TEXT_NODE;
+
+    if (!valid) {
+      throw new Error(`This transition only works on elements with a single text node child`);
+    }
+
+    const text = node.textContent;
+    const duration = text.length / (speed * 0.01);
+
+    return {
+      duration,
+      tick: (t: number) => {
+        const i = Math.trunc(text.length * t);
+        node.textContent = text.slice(0, i);
+      }
+    };
+  }
+
+  setInterval(() => {
+    createRandomText();
+  }, 1700);
+  setInterval(() => {
+    createRandomText();
+  }, 1200);
 </script>
 
 <svelte:window bind:innerWidth={canvasWidth} bind:innerHeight={canvasHeight} />
@@ -139,6 +220,20 @@
       style={`--x: ${starPosition[0]}; --y: ${starPosition[1]}; --delay: -${starPosition[2] * 2400}ms`}
     >
       🟅
+    </div>
+  {/each}
+</div>
+<div class="grid-container"><div class="grid"></div></div>
+<div class="random-text-container">
+  {#each randomTextList as randomText (randomText.id)}
+    <div
+      in:typewriter={{}}
+      out:fade={{ delay: 1200 }}
+      onintroend={() => removeRandomText(randomText.id)}
+      class="random-text"
+      style={`--x: ${randomText.x}px; --y: ${randomText.y}px; --r: ${randomText.r}deg`}
+    >
+      {randomText.t}
     </div>
   {/each}
 </div>
@@ -172,6 +267,7 @@
     position: fixed;
     inset: 0;
     z-index: -900;
+    user-select: none;
     animation: fade-in 1600ms ease-out;
   }
 
@@ -197,5 +293,52 @@
       opacity: 1;
       scale: 1;
     }
+  }
+
+  .grid-container {
+    position: fixed;
+    inset: 0;
+    z-index: -1010;
+    perspective: 800px;
+    animation: fade-in 2400ms ease-out;
+  }
+
+  .grid {
+    position: absolute;
+    inset: 0;
+    top: -50%;
+    left: -150%;
+    right: -150%;
+    transform: translateY(50%) rotateX(100deg) translateY(-50%);
+
+    --c: var(--background-main);
+    --w1: 1px;
+    --w2: 2px;
+    --gs: 150px;
+    background-image:
+      linear-gradient(0deg, var(--c) var(--w1), transparent var(--w2)),
+      linear-gradient(90deg, var(--c) var(--w1), transparent var(--w2)),
+      linear-gradient(-90deg, var(--c) var(--w1), transparent var(--w2)),
+      linear-gradient(-180deg, var(--c) var(--w1), transparent var(--w2));
+    background-size: var(--gs) var(--gs);
+    background-position: 50% 50%;
+    mask-image: linear-gradient(to top, #000, transparent);
+    opacity: 0.35;
+  }
+
+  .random-text-container {
+    position: fixed;
+    inset: 0;
+    z-index: -1009;
+    user-select: none;
+    opacity: 0.1;
+  }
+  .random-text {
+    position: absolute;
+    top: var(--y);
+    left: var(--x);
+    width: 35ch;
+    transform: translate(-50%, -50%) rotate(var(--r)) translate(50%, 50%);
+    animation: fade-in 600ms ease-out;
   }
 </style>
