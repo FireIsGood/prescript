@@ -61,8 +61,8 @@ function makeCityRumbler(
   return { rng: mulberry32(parsedSeed), rumbleSeed: parsedSeed };
 }
 
-function pickList(num: number, list: string[]) {
-  return list.at(Math.floor(num * list.length)) || "[ERROR]";
+function pickList<T>(num: number, list: Array<T>): T {
+  return list[Math.floor(num * list.length)];
 }
 
 function pickRange(num: number, start: number, end: number): number {
@@ -212,8 +212,12 @@ function getPrefix(rng: RNG): string {
   const numberBig = pickRange(rng(), 150, 3000);
   const location = getLocation(rng);
   const person = getPerson(rng);
-  const item = pickList(rng(), items);
-  const item2 = pickList(rng(), items);
+  const item = getItem(rng);
+  const itemPlural = getItem(rng, false, true);
+  const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
+  const item2 = getItem(rng);
+  const item2Plural = getItem(rng, false, true);
+  const item2MaybePlural = rng() < 0.5 ? item2 : item2Plural;
   const sense = pickList(rng(), senses);
   const color = pickList(rng(), colors);
   const emotion = pickList(rng(), emotions);
@@ -226,8 +230,8 @@ function getPrefix(rng: RNG): string {
     `feel ${emotion}`,
     `reach your breaking point`,
     `${sense} ${person}`,
-    `find ${item}`,
-    `find ${item} next to ${item2}`,
+    `find ${itemMaybePlural}`,
+    `find ${itemMaybePlural} next to ${item2MaybePlural}`,
     `${person} talks about ${topic}`,
     `go to ${location}`,
     `flip a coin`,
@@ -259,7 +263,7 @@ function getPrefix(rng: RNG): string {
     `as casually as possible `,
     `at ${location} `,
     `before drying off, `,
-    `before eating ${item}, `,
+    `before eating ${itemMaybePlural}, `,
     `before washing your hands, `,
     `by only calling in favors `,
     `by only speaking to others `,
@@ -273,16 +277,16 @@ function getPrefix(rng: RNG): string {
     `telling only ${person}, `,
     `through your device `,
     `under no circumstances will you `,
-    `using ${item}, `,
+    `using ${itemMaybePlural} `,
     `using only what you ${sense}, `,
     `walk ${numberBig.toLocaleString("en")} meters, then `,
     `while at ${location} `,
     `while at the home of ${person} `,
-    `while outside `,
+    `while outside, `,
     `within ${duration} `,
-    `without prior preparation `,
-    `without telling ${person} `,
-    `without telling anyone `
+    `without prior preparation, `,
+    `without telling ${person}, `,
+    `without telling anyone, `
   ];
   return pickList(rng(), prefixes);
 }
@@ -297,8 +301,13 @@ function getMainTask(rng: RNG): string {
   const person = getPerson(rng);
   const personArticle = getPerson(rng, true);
   const person2 = getPerson(rng);
-  const item = pickList(rng(), items);
-  const item2 = pickList(rng(), items);
+  const item = getItem(rng);
+  const itemNoArticle = getItem(rng, true);
+  const itemPlural = getItem(rng, false, true);
+  const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
+  const item2 = getItem(rng);
+  const item2Plural = getItem(rng, false, true);
+  const item2MaybePlural = rng() < 0.5 ? item2 : item2Plural;
   const topic = getTopic(rng);
   const organ = pickList(rng(), organs);
   const verb = pickList(rng(), verbs);
@@ -345,7 +354,7 @@ function getMainTask(rng: RNG): string {
     `cuddle with ${person}${condPersonAdd}`,
     `marry ${person}${condPersonAdd}`,
     `stab ${person}${condPersonAdd}`,
-    `stab ${person} with ${item}`,
+    `stab ${person} with ${itemMaybePlural}`,
     `force ${person} to ${verb}${condPersonAdd}`,
     `lie to ${person}${condPersonAdd}`,
     `confess the truth to ${person}${condPersonAdd}`,
@@ -359,34 +368,34 @@ function getMainTask(rng: RNG): string {
     `play ${gameWord} with ${person}${condGameAdd}`,
     `remove the ${organ} of ${person}`,
     `clean the dishes${condDurationAdd}`,
-    `clean ${item}${condDurationAdd}`,
+    `clean ${itemMaybePlural}${condDurationAdd}`,
     `walk backwards${condDurationAdd}`,
     `chase ${person}${condPersonAdd}`,
-    `scratch a symbol of your ${item} into ${item2}`,
+    `scratch a symbol of your ${itemNoArticle} into ${itemMaybePlural}`,
     `wave to ${person}`,
     `wave to ${person} ${numberTiny} times`,
     `point towards ${person}`,
     `do not enter ${location}${condDurationAdd}`,
     `forget the name of ${person}${condDurationAdd}`,
-    `create ${item} or destroy it if it exists${condDurationAdd}`,
+    `create ${itemMaybePlural} or destroy it if it exists${condDurationAdd}`,
     `do not look behind you${condDurationAdd}`,
     `yell towards ${location} about ${topic} for ${duration}${condDurationAdd}`,
     `buy ${item} which you will not use`,
     `server ${item} into ${numberTiny} pieces`,
-    `use ${item} with ${item2}`,
-    `use ${item} on ${item2}`,
-    `use ${item} on ${person}`,
-    `change ${item} into ${item2}`,
-    `return ${item} so you may obtain ${item2}`,
-    `destroy your own ${item}`,
-    `throw ${item} at ${person}${condPersonAdd}`,
-    `use ${item} on ${person}${condPersonAdd}`,
+    `use ${itemMaybePlural} with ${item2MaybePlural}`,
+    `use ${itemMaybePlural} on ${item2MaybePlural}`,
+    `use ${itemMaybePlural} on ${person}`,
+    `change ${itemMaybePlural} into ${item2MaybePlural}`,
+    `return ${item} so you may obtain ${item2MaybePlural}`,
+    `destroy your own ${itemNoArticle}`,
+    `throw ${itemMaybePlural} at ${person}${condPersonAdd}`,
+    `use ${itemMaybePlural} on ${person}${condPersonAdd}`,
     `use ${person} on ${item}${condPersonAdd}`,
     `make ${person} speak with ${person2}`,
     `make ${person} into ${person2}${condPersonAdd}`,
     `shove ${person} into ${person2}${condPersonAdd}`,
     `${verb} ${person}${condPersonAdd}${condPersonAdd}`,
-    `${verb} ${item}`,
+    `${verb} ${itemMaybePlural}`,
     `read ${numberTiny} books that you ${sense}`,
     `do not return home for ${duration}`
   ];
@@ -397,7 +406,10 @@ function getBetweenTask(rng: RNG): string {
   const numberSmall = pickRange(rng(), 10, 500);
   const duration = getDuration(rng);
   const person = getPerson(rng);
-  const item = pickList(rng(), items);
+  const item = getItem(rng);
+  const itemNoArticle = getItem(rng, true);
+  const itemPlural = getItem(rng, false, true);
+  const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
 
   const tasks: string[] = [
     `. wait ${duration}, then `,
@@ -406,7 +418,8 @@ function getBetweenTask(rng: RNG): string {
     `. once you find your ${item}, `,
     `. after ${duration}, `,
     `. without looking, `,
-    `. using ${item}, `,
+    `. using ${itemMaybePlural}, `,
+    `. using your own ${itemNoArticle}, `,
     `. then, `,
     `. only after you have confirmed the previous command, `,
     `. ignoring the consequences, `,
@@ -428,7 +441,10 @@ function getFollowupTask(rng: RNG): string {
   const duration = getDuration(rng);
   const person = getPerson(rng);
   const person2 = getPerson(rng);
-  const item = pickList(rng(), items);
+  const item = getItem(rng);
+  const itemNoArticle = getItem(rng, true);
+  const itemPlural = getItem(rng, false, true);
+  const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
   const sense = pickList(rng(), senses);
   const organ = pickList(rng(), organs);
   const verb = pickList(rng(), verbs);
@@ -440,11 +456,11 @@ function getFollowupTask(rng: RNG): string {
     `${verb} anyone who comes within ${numberSmall} meters for ${duration}`,
     `${verb} ${person}`,
     `break the joints of ${person}`,
-    `give ${person} ${numberSmall} ${item}`,
-    `give ${person} your ${item}`,
-    `take ${numberSmall} ${item} from ${person}`,
+    `give ${person} ${numberSmall} ${itemMaybePlural}`,
+    `give ${person} your ${itemNoArticle}`,
+    `take ${numberSmall} ${numberSmall === 1 ? item : itemPlural} from ${person}`,
     `replace the ${organ} of ${person}`,
-    `tell ${person} about ${item}`,
+    `tell ${person} about ${itemPlural}`,
     `discuss ${topic}`,
     `discuss ${topic} with ${person}`,
     `think about ${topic}`,
@@ -478,7 +494,7 @@ function getFollowupTask(rng: RNG): string {
     `ignore the screaming`,
     `think about happy thoughts`,
     `ensure you will not blink`,
-    `immediately discard ${item}`,
+    `immediately discard ${itemMaybePlural}`,
     `do not look at your device for ${duration}`,
     `paint the result`
   ];
@@ -529,7 +545,7 @@ function getConditionGame(rng: RNG): string {
   const numberSmall = pickRange(rng(), 1, 14);
   const numberLarge = pickRange(rng(), 200, 9000);
   const gameResult = pickList(rng(), ["win", "lose", "tie"]);
-  const item = pickList(rng(), items);
+  const item = getItem(rng);
   const organ = pickList(rng(), organs);
   const duration = getDuration(rng);
 
@@ -549,7 +565,9 @@ function getConditionDuration(rng: RNG): string {
   const numberSmall = pickRange(rng(), 1, 14);
   const numberMedium = pickRange(rng(), 16, 240);
   const numberLarge = pickRange(rng(), 200, 9000);
-  const item = pickList(rng(), items);
+  const item = getItem(rng);
+  const itemPlural = getItem(rng, false, true);
+  const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
   const person = getPerson(rng);
   const organ = pickList(rng(), organs);
   const sense = pickList(rng(), senses);
@@ -568,9 +586,9 @@ function getConditionDuration(rng: RNG): string {
     "you get bored",
     `you still have ${organ} after ${numberSmall} hours`,
     `you see ${person}`,
-    `you see ${item}`,
-    `you still hate ${item}`,
-    `you still ${sense} ${item}`,
+    `you see ${itemMaybePlural}`,
+    `you still hate ${itemPlural}`,
+    `you still ${sense} ${itemMaybePlural}`,
     `${person} notices`
   ];
 
@@ -594,7 +612,7 @@ function getConditionDuration(rng: RNG): string {
 function getConditionPerson(rng: RNG): string {
   const numberSmall = pickRange(rng(), 1, 14);
   const organ = pickList(rng(), organs);
-  const item = pickList(rng(), items);
+  const item = getItem(rng);
   const verb = pickList(rng(), verbs);
   const emotion = pickList(rng(), emotions);
   const duration = getDuration(rng);
@@ -621,7 +639,7 @@ function getConditionPerson(rng: RNG): string {
     ` and get their contact information`,
     ` and regret what you've done`,
     ` who ${verb} you first`,
-    ` who ${verb} when a ${item} is placed on their ${organ}`
+    ` who ${verb} when ${item} is placed on their ${organ}`
   ];
   return pickList(rng(), conditions);
 }
@@ -634,7 +652,9 @@ function getDuration(rng: RNG): string {
 
 function getTaskModifier(rng: RNG): string {
   const location = getLocation(rng);
-  const item = pickList(rng(), items);
+  const item = getItem(rng);
+  const itemPlural = getItem(rng, false, true);
+  const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
 
   const modifiers: string[] = [
     " silently",
@@ -642,7 +662,10 @@ function getTaskModifier(rng: RNG): string {
     " backwards",
     " as fast as you can",
     " with no one present",
-    ` while holding ${item}`,
+    ` while holding ${itemMaybePlural}`,
+    ` while thinking about ${itemMaybePlural}`,
+    ` while manipulating ${item}`,
+    ` while balancing ${item} on your head`,
     ` at ${location}`,
     " indoors",
     " outdoors",
@@ -746,17 +769,19 @@ function getPerson(rng: RNG, existingArticle: boolean = false): string {
   const organ = pickList(rng(), organs);
   const sense = pickList(rng(), senses);
   const clothing = pickList(rng(), clothes);
-  const item = pickList(rng(), items);
+  const item = getItem(rng);
+  const itemPlural = getItem(rng, false, true);
+  const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
   const emotion = pickList(rng(), emotions);
   const postfixIdentifiers: string[] = [
     ` who lies`,
     ` who speaks in riddles`,
-    ` who owns ${item}`,
-    ` who often is seen around ${item}`,
+    ` who owns ${itemMaybePlural}`,
+    ` who often is seen around ${itemMaybePlural}`,
     ` who is wearing ${clothing}`,
     ` who is wearing a ${color} ${clothing}`,
     ` who is wearing ${color}`,
-    ` who is holding ${item}`,
+    ` who is holding ${itemMaybePlural}`,
     ` who is ${emotion}`,
     ` who is laying down`,
     ` who is ${emotion} towards you`,
@@ -764,7 +789,7 @@ function getPerson(rng: RNG, existingArticle: boolean = false): string {
     ` who feels ${color}`,
     ` who is eating`,
     ` who is doing laundry`,
-    ` who is shopping for ${item}`,
+    ` who is shopping for ${itemMaybePlural}`,
     ` who is still warm`,
     ` who is cold to you`,
     ` who is shivering`,
@@ -775,7 +800,7 @@ function getPerson(rng: RNG, existingArticle: boolean = false): string {
     ` you know`,
     ` you despise`,
     ` you are close with`,
-    ` you know owns ${item}`,
+    ` you know owns ${itemMaybePlural}`,
     ` you hesitate to think of`,
     ` you hate the most`,
     ` you owe a debt to`,
@@ -831,7 +856,9 @@ function getPerson(rng: RNG, existingArticle: boolean = false): string {
 function getTopic(rng: RNG): string {
   const numberAny = pickRange(rng(), -1000, 1000);
   const game = pickList(rng(), games);
-  const item = pickList(rng(), items);
+  const item = getItem(rng);
+  const itemPlural = getItem(rng, false, true);
+  const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
   const color = pickList(rng(), colors);
   const person = getPerson(rng);
   const location = getLocation(rng);
@@ -895,19 +922,49 @@ function getTopic(rng: RNG): string {
     `the geopolitical standing of ${location}`,
     `having ${organ}`,
     `eating ${organ}`,
-    `using ${item}`,
-    `buying ${item}`,
-    `selling ${item}`,
-    `coveting ${item}`,
+    `using ${itemMaybePlural}`,
+    `buying ${itemMaybePlural}`,
+    `selling ${itemMaybePlural}`,
+    `coveting ${itemMaybePlural}`,
     location,
     organ,
-    item
+    itemMaybePlural
   ];
 
   return pickList(rng(), topics);
 }
 
+function getItem(rng: RNG, existingArticle: boolean = false, plural: boolean = false): string {
+  const itemMaybePlural = pickList(rng(), items);
+  let itemSingular: string;
+  let itemPlural: string;
+  if (typeof itemMaybePlural === "string") {
+    itemSingular = itemMaybePlural;
+    itemPlural = itemMaybePlural;
+  } else {
+    itemSingular = itemMaybePlural[0];
+    itemPlural = itemMaybePlural[1];
+  }
+  let item = plural ? itemPlural : itemSingular;
+
+  if (existingArticle) {
+    return item;
+  }
+
+  // Add article
+  let prefixArticle = "";
+  if ("aeiou".split("").includes(item[0])) {
+    prefixArticle = "an";
+  } else {
+    prefixArticle = "a";
+  }
+  item = prefixArticle + " " + item;
+
+  return item;
+}
+
 // Lists of static stuff
+type MaybePlural = string | [string, string]; // 0 is singular, 1 is plural
 const games: string[] = [
   "hockey",
   "hide and seek",
@@ -960,73 +1017,72 @@ const colors: string[] = [
   "peridot",
   "garnet"
 ];
-const items: string[] = [
+const items: MaybePlural[] = [
   "ice cream",
   "pasta",
   "rice",
-  "heary stew",
+  ["heary stew", "heary stews"],
   "bacon",
   "toast",
-  "tasty things",
+  ["tasty thing", "tasty thing"],
   "unexploded ordinance",
-  "a friendship necklace",
-  "a box of matches",
-  "a chain",
-  "a gas canister",
-  "a sandwich",
-  "a fish",
-  "a chicken",
-  "a leftovers",
-  "a ribbon",
-  "a ribbon",
-  "a dead plant",
-  "a dice",
-  "a rock",
-  "a hammer",
-  "a knife",
-  "a sword",
-  "a blade",
-  "a bow",
-  "a spray paint can",
-  "a flower",
-  "a board game",
-  "a pen and paper",
-  "a coin",
-  "a towel",
-  "a wing singularity",
-  "a ladder",
-  "a screwdriver",
-  "a traffic cone",
-  "a bug net",
+  ["friendship necklace", "friendship necklaces"],
+  ["box of matches", "boxes of matches"],
+  ["chain", "chains"],
+  ["gas canister", "gas canisters"],
+  ["sandwich", "sandwiches"],
+  "fish",
+  "chicken",
+  ["leftover", "leftovers"],
+  ["ribbon", "ribbons"],
+  ["dead plant", "dead plants"],
+  "dice",
+  ["rock", "rocks"],
+  ["hammer", "hammers"],
+  ["knife", "knives"],
+  ["sword", "swords"],
+  ["blade", "blades"],
+  ["bow", "bows"],
+  ["spray paint can", "spray paint cans"],
+  ["flower", "flowers"],
+  ["board game", "board games"],
+  "pen and paper",
+  ["coin", "coins"],
+  ["towel", "towels"],
+  ["wing singularity", "wing singularities"],
+  ["ladder", "ladders"],
+  ["screwdriver", "screwdrivers"],
+  ["traffic cone", "traffic cones"],
+  ["bug net", "bug nets"],
   "loose change",
-  "a mirror",
-  "a pocketwatch",
-  "a sprinkler",
-  "a brick",
-  "a framed picture",
-  "a dead battery",
-  "a meal worm",
-  "a crate",
-  "a tire iron",
-  "an ice chest",
-  "the flame",
-  "your most precious thing",
-  "your forgotten thing",
-  "your love",
-  "the evening",
-  "the lights",
-  "a strange aversion",
-  "oddity",
-  "warm thing",
-  "cold thing",
-  "hearty thing",
-  "wooden thing",
-  "sharp thing",
-  "blunt thing",
-  "thin thing",
-  "thick thing",
-  "deadly thing",
-  "cute thing"
+  ["mirror", "mirrors"],
+  ["pocketwatch", "pocketwatches"],
+  ["sprinkler", "sprinklers"],
+  ["brick", "bricks"],
+  ["framed picture", "framed pictures"],
+  ["dead battery", "dead batteries"],
+  ["meal worm", "meal worms"],
+  ["crate", "crates"],
+  ["tire iron", "tire irons"],
+  ["ice chest", "ice chests"],
+  ["flame", "flames"],
+  ["most precious thing", "most precious things"],
+  ["forgotten thing", "forgotten things"],
+  ["love", "loves"],
+  ["evening", "evenings"],
+  ["light", "lights"],
+  ["strange aversion", "strange aversions"],
+  ["oddity", "oddities"],
+  ["warm thing", "warm things"],
+  ["cold thing", "cold things"],
+  ["hearty thing", "hearty things"],
+  ["wooden thing", "wooden things"],
+  ["sharp thing", "sharp things"],
+  ["blunt thing", "blunt things"],
+  ["thin thing", "thin things"],
+  ["thick thing", "thick things"],
+  ["deadly thing", "deadly things"],
+  ["cute thing", "cute things"]
 ];
 const organs: string[] = [
   "lungs",
