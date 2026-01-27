@@ -5,10 +5,11 @@
   dayjs.extend(duration);
   import beepStartSrc from "$lib/assets/beepstart.mp3";
   import beepRepeatSrc from "$lib/assets/beep.mp3";
-  import buttonPressSrc from "$lib/assets/button.mp3";
+  import buttonPrimarySrc from "$lib/assets/button_primary.mp3";
+  import buttonSecondarySrc from "$lib/assets/button_secondary.mp3";
   import { getPrescript, type RumbleType } from "$lib/city-rumbles";
   import { browser } from "$app/environment";
-  import { remap } from "$lib/util";
+  import { remap, typewriter } from "$lib/util";
 
   type PrescriptState = [
     //
@@ -21,6 +22,7 @@
   ][number];
   type AnimationState = [
     //
+    "loading",
     "showing_name",
     "showing_prescript",
     "prescript_finished"
@@ -40,7 +42,7 @@
   // Righteous real state machine
   let visible: boolean = $state(false);
   let prescriptState = $state<PrescriptState>("main_menu");
-  let animationState = $state<AnimationState>("showing_name");
+  let animationState = $state<AnimationState>("loading");
 
   // EVIL HACK FOR LIVE TIMERS
   // the library didn't work out...
@@ -73,8 +75,12 @@
     src: [beepRepeatSrc],
     volume: 0.03
   });
-  let buttonPress = new Howl({
-    src: [buttonPressSrc],
+  let buttonPrimary = new Howl({
+    src: [buttonPrimarySrc],
+    volume: 0.075
+  });
+  let buttonSecondary = new Howl({
+    src: [buttonSecondarySrc],
     volume: 0.075
   });
 
@@ -156,11 +162,12 @@
     }
 
     // Ask for name
+    buttonPrimary.play();
     prescriptState = forOther ? "name_input_transient" : "name_input";
   }
 
   function cancelName() {
-    buttonPress.play();
+    buttonSecondary.play();
     prescriptState = "main_menu";
     initial_load = false;
   }
@@ -177,6 +184,8 @@
     seed: string | undefined = undefined,
     updateLastOpened: boolean = false
   ) {
+    buttonPrimary.play();
+
     if (updateLastOpened) {
       const today = new Date();
       today.setUTCSeconds(0);
@@ -184,6 +193,7 @@
       today.setUTCHours(0);
       localStorage.setItem("LAST_OPENED", today.toUTCString());
     }
+
     if (forceText) {
       text = forceText;
     } else if (forceID) {
@@ -199,10 +209,11 @@
 
     name = seed ?? "";
     visible = true;
+    animationState = "loading";
   }
 
   function resetPrescript() {
-    buttonPress.play();
+    buttonPrimary.play();
     visible = false;
     prescriptState = "main_menu";
   }
@@ -213,11 +224,18 @@
   });
 </script>
 
-{#if visible && name}
-  <!-- weird transition workaround -->
+<!-- weird transition workaround -->
+{#if visible && animationState === "loading"}
+  <p
+    in:prescript={{ pauseDuration: 0, sound: false, speed: 15 }}
+    onintroend={() => setTimeout(() => (animationState = "showing_name"), 480)}
+    class="loading-line"
+  >
+    ...
+  </p>
+{:else if visible && name}
   <p
     in:prescript={{ pauseDuration: 0 }}
-    onintrostart={() => (animationState = "showing_name")}
     onintroend={() => setTimeout(() => (animationState = "showing_prescript"), 480)}
     class="name-line text-shadow"
   >
@@ -249,7 +267,6 @@
   <p
     class="fade-in text-shadow"
     in:prescript={{}}
-    onintrostart={() => (animationState = "showing_prescript")}
     onintroend={() => (animationState = "prescript_finished")}
   >
     {text}
@@ -273,15 +290,15 @@
       <br />
       <input class="fade-in" type="text" bind:value={name} />
     </label>
-    <div class="button-group">
-      <button class="receive text-shadow" onclick={cancelName}>
-        <div class="button-arrow-left">&gt;</div>
-        CANCEL
-        <div class="button-arrow-right">&lt;</div>
-      </button>
+    <div class="button-group reverse">
       <button class="receive text-shadow" onclick={submitName} disabled={name.trim() === ""}>
         <div class="button-arrow-left">&gt;</div>
         SUBMIT
+        <div class="button-arrow-right">&lt;</div>
+      </button>
+      <button class="receive text-shadow" onclick={cancelName}>
+        <div class="button-arrow-left">&gt;</div>
+        CANCEL
         <div class="button-arrow-right">&lt;</div>
       </button>
     </div>
@@ -430,12 +447,21 @@
     }
   }
 
+  .loading-line {
+    padding: 0.5em;
+    color: rgb(from var(--text) r g b / 0.25);
+  }
+
   .name-line {
     margin-bottom: 0.5em;
   }
 
   .button-group {
     display: flex;
+
+    &.reverse {
+      flex-direction: row-reverse;
+    }
   }
 
   .proceed {
