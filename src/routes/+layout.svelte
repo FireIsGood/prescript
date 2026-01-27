@@ -64,7 +64,6 @@
     row-gap: 0.75rem;
     flex-wrap: wrap;
     justify-content: space-between;
-    text-align: center;
     margin-top: auto;
     padding: 1rem 1.5rem;
     color: var(--text-muted);
