@@ -126,6 +126,8 @@ function fixPluralize(num: number): string {
   return "";
 }
 
+type PrescriptState = { conditions: number };
+
 // Takes an optional seed
 // Returns text and a hex representation of the seed's hashed value
 export function getPrescript(
@@ -171,16 +173,22 @@ and eat it with a fork.`,
 
   let prescript: string[] = [];
 
+  // Ensure sentence structure makes sense by composition
+  let prescriptState: PrescriptState = { conditions: 0 };
+
   // Prefix
   if (cityRumbler() < 0.5) {
     prescript.push(getPrefix(cityRumbler));
   }
 
   // Main task
-  prescript.push(getMainTask(cityRumbler));
+  prescript.push(getMainTask(cityRumbler, prescriptState));
 
   if (cityRumbler() < 0.3) {
-    prescript.push(getTaskModifier(cityRumbler));
+    if (prescriptState.conditions < 1) {
+      prescriptState.conditions += 1;
+      prescript.push(getTaskModifier(cityRumbler));
+    }
   }
 
   // Followup task
@@ -195,7 +203,10 @@ and eat it with a fork.`,
     prescript.push(getFollowupTask(cityRumbler));
 
     if (cityRumbler() < 0.3) {
-      prescript.push(getTaskModifier(cityRumbler));
+      if (prescriptState.conditions < 1) {
+        prescriptState.conditions += 1;
+        prescript.push(getTaskModifier(cityRumbler));
+      }
     }
   }
 
@@ -265,8 +276,8 @@ function getPrefix(rng: RNG): string {
     `before drying off, `,
     `before eating ${itemMaybePlural}, `,
     `before washing your hands, `,
-    `by only calling in favors `,
-    `by only speaking to others `,
+    `by only calling in favors, `,
+    `by only talking to others, `,
     `do not `,
     `ignoring ${person}, `,
     `immediately after you finish reading this `,
@@ -291,7 +302,7 @@ function getPrefix(rng: RNG): string {
   return pickList(rng(), prefixes);
 }
 
-function getMainTask(rng: RNG): string {
+function getMainTask(rng: RNG, state: PrescriptState): string {
   const numberTiny = pickRange(rng(), 2, 9);
   const numberSmall = pickRange(rng(), 1, 160);
   const numberWord = pickNumberWord(rng());
@@ -315,19 +326,12 @@ function getMainTask(rng: RNG): string {
 
   // Duration condition followup
   let condDurationAdd = "";
-  if (rng() > 0.3) {
-    condDurationAdd = getConditionDuration(rng);
-  }
-
-  // Game condition followup
   let condGameAdd = "";
-  if (rng() > 0.6) {
-    condGameAdd = getConditionGame(rng);
-  }
-
-  // Person condition followup
   let condPersonAdd = "";
-  if (rng() > 0.6) {
+  if (state.conditions < 1 && rng() > 0.3) {
+    state.conditions += 1;
+    condDurationAdd = getConditionDuration(rng);
+    condGameAdd = getConditionGame(rng);
     condPersonAdd = getConditionPerson(rng);
   }
 
@@ -566,6 +570,7 @@ function getConditionDuration(rng: RNG): string {
   const numberMedium = pickRange(rng(), 16, 240);
   const numberLarge = pickRange(rng(), 200, 9000);
   const item = getItem(rng);
+  const itemNoArticle = getItem(rng, true);
   const itemPlural = getItem(rng, false, true);
   const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
   const person = getPerson(rng);
@@ -576,17 +581,22 @@ function getConditionDuration(rng: RNG): string {
   const conditions: string[] = [
     `you still have two arms`,
     `you still have two legs`,
+    `the current ${pickList(rng(), ["minute", "hour"])} is ${pickList(rng(), ["even", "odd"])}`,
     `you still have your ${organ}`,
     "you feel like it",
     `you feel still feel ${emotion}`,
-    `someone is injured`,
-    `you are injured`,
+    `someone is ${emotion}`,
+    `you are ${emotion}`,
+    `you get ${emotion}`,
+    `you wish you were ${emotion}`,
+    `you think you are ${emotion}`,
     `your stomach rumbles ${numberSmall} times`,
-    "you hear the third bird sings",
-    "you get bored",
+    "you hear the third bird call",
     `you still have ${organ} after ${numberSmall} hours`,
     `you see ${person}`,
     `you see ${itemMaybePlural}`,
+    `you the first ${itemNoArticle}`,
+    `you misplace your ${clothes}`,
     `you still hate ${itemPlural}`,
     `you still ${sense} ${itemMaybePlural}`,
     `${person} notices`
@@ -595,8 +605,8 @@ function getConditionDuration(rng: RNG): string {
   const condition = pickList(rng(), conditions);
   const conditionMappings: string[] = [
     // Conditions
-    `, repeat if ${condition}`,
-    `, repeat unless ${condition}`,
+    `. repeat if ${condition}`,
+    `. repeat unless ${condition}`,
     ` as long as ${condition}`,
     ` if ${condition}`,
     ` unless ${condition}`,
@@ -1191,5 +1201,7 @@ const emotions: string[] = [
   "bright",
   "stellar",
   "excited",
-  "trapped"
+  "trapped",
+  "injured",
+  "incapacitated"
 ];
