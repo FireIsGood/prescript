@@ -4,6 +4,7 @@
   import buttonOpenSrc from "$lib/assets/button_open.mp3";
   import buttonCloseSrc from "$lib/assets/button_close.mp3";
   import Prescript from "./prescript.svelte";
+  import { browser } from "$app/environment";
 
   let buttonClose = new Howl({
     src: [buttonCloseSrc],
@@ -53,26 +54,28 @@
       </div>
     </button>
   </div>
-  <div class="secret-menu" class:hidden={!secretMenuVisible}>
-    <div class="secret-menu-inner">
-      <h2>Weaver Controls</h2>
-      <div class="secret-control">
-        <label>
-          Force Text<br />
-          <textarea rows="3" bind:value={forceText} class="secret-textarea"></textarea>
-        </label>
-      </div>
-      <div class="secret-control">
-        <label
-          >Force ID<br />
-          <input type="text" bind:value={forceID} class="secret-input" size="16" />
-        </label>
-      </div>
-      <div class="secret-control">
-        <button class="secret-button" onclick={resetName}>Reset your name</button>
+  {#if browser}
+    <div class="secret-menu" class:hidden={!secretMenuVisible}>
+      <div class="secret-menu-inner">
+        <h2>Weaver Controls</h2>
+        <div class="secret-control">
+          <label>
+            Force Text<br />
+            <textarea rows="3" bind:value={forceText} class="secret-textarea"></textarea>
+          </label>
+        </div>
+        <div class="secret-control">
+          <label
+            >Force ID<br />
+            <input type="text" bind:value={forceID} class="secret-input" size="16" />
+          </label>
+        </div>
+        <div class="secret-control">
+          <button class="secret-button" onclick={resetName}>Reset your name</button>
+        </div>
       </div>
     </div>
-  </div>
+  {/if}
 </section>
 <section>
   <div class="prescript-text">

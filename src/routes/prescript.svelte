@@ -1,9 +1,29 @@
 <script lang="ts">
   import { Howl } from "howler";
+  import dayjs from "dayjs";
+  import duration from "dayjs/plugin/duration"; // import plugin
+  dayjs.extend(duration);
   import beepStartSrc from "$lib/assets/beepstart.mp3";
   import beepRepeatSrc from "$lib/assets/beep.mp3";
   import buttonPressSrc from "$lib/assets/button.mp3";
   import { getPrescript, type RumbleType } from "./city-rumbles";
+  import { browser } from "$app/environment";
+
+  type PrescriptState = [
+    //
+    "main_menu",
+    "random",
+    "daily",
+    "proselytize",
+    "name_input",
+    "name_input_transient"
+  ][number];
+  type AnimationState = [
+    //
+    "showing_name",
+    "showing_prescript",
+    "prescript_finished"
+  ][number];
 
   let {
     forceText,
@@ -15,12 +35,34 @@
   let name: string = $state("");
   let text: string = $state("");
   let rumbleSeed: string = $state("");
-  // Evil fake state machine
+  let initial_load = $state(true); // Just for intro animations
+  // Righteous real state machine
   let visible: boolean = $state(false);
-  let inputtingName: boolean = $state(false); // When a name is being input
-  let transientInput: boolean = $state(false); // When a name should not be remembered
-  let introDone: boolean = $state(false); // When the intro "to name" finishes
-  let visibleDone: boolean = $state(false); // When the animation finishes
+  let prescriptState = $state<PrescriptState>("main_menu");
+  let animationState = $state<AnimationState>("showing_name");
+
+  // EVIL HACK FOR LIVE TIMERS
+  // the library didn't work out...
+  let secondUpdate = $state<number>(0);
+  setTimeout(() => {
+    secondUpdate = Date.now();
+    setInterval(() => {
+      secondUpdate = Date.now();
+    }, 1000);
+  }, Date.now() % 1000);
+
+  // Daily timer
+  let relativeLastOpened = $derived.by(() => {
+    secondUpdate;
+    let timeLastOpened =
+      browser && localStorage.getItem("LAST_OPENED")
+        ? new Date(localStorage.getItem("LAST_OPENED") ?? 0)
+        : null;
+    if (timeLastOpened === null) return null;
+
+    const duration = dayjs.duration(dayjs(timeLastOpened).add(1, "day").diff());
+    return duration.asSeconds() > 0 ? duration.format("HH:mm:ss") : null;
+  });
 
   function remap(
     value: number,
@@ -108,13 +150,12 @@
   // Gets name if not known to load up a daily seed
   // For Other option makes it ask always and not remember
   function showSeeded(forOther: boolean = false) {
-    transientInput = forOther;
-
     // Get name from local storage
     name = localStorage.getItem("PROXY_NAME") ?? "";
 
+    // Personal daily
     if (!forOther && name) {
-      showPrescript("seeded", name);
+      showPrescript("seeded", name, true);
       return;
     }
 
@@ -124,18 +165,34 @@
     }
 
     // Ask for name
-    inputtingName = true;
+    prescriptState = forOther ? "name_input_transient" : "name_input";
+  }
+
+  function cancelName() {
+    buttonPress.play();
+    prescriptState = "main_menu";
+    initial_load = false;
   }
 
   function submitName() {
-    inputtingName = false;
-    if (!transientInput) {
+    if (prescriptState === "name_input") {
       localStorage.setItem("PROXY_NAME", name);
     }
     showPrescript("seeded", name);
   }
 
-  function showPrescript(rumbleType: RumbleType, seed: string | undefined = undefined) {
+  function showPrescript(
+    rumbleType: RumbleType,
+    seed: string | undefined = undefined,
+    updateLastOpened: boolean = false
+  ) {
+    if (updateLastOpened) {
+      const today = new Date();
+      today.setUTCSeconds(0);
+      today.setUTCMinutes(0);
+      today.setUTCHours(0);
+      localStorage.setItem("LAST_OPENED", today.toUTCString());
+    }
     if (forceText) {
       text = forceText;
     } else if (forceID) {
@@ -156,6 +213,7 @@
   function resetPrescript() {
     buttonPress.play();
     visible = false;
+    prescriptState = "main_menu";
   }
 
   $effect(() => {
@@ -168,21 +226,22 @@
   <!-- weird transition workaround -->
   <p
     in:prescript={{ pauseDuration: 0 }}
-    onintrostart={() => {
-      introDone = false;
-      visibleDone = false;
-    }}
-    onintroend={() => setTimeout(() => (introDone = true), 480)}
+    onintrostart={() => (animationState = "showing_name")}
+    onintroend={() => setTimeout(() => (animationState = "showing_prescript"), 480)}
     class="name-line text-shadow"
   >
     【To {name}】
   </p>
-  {#if introDone}
-    <p class="fade-in text-shadow" in:prescript={{}} onintroend={() => (visibleDone = true)}>
+  {#if animationState === "showing_prescript" || animationState === "prescript_finished"}
+    <p
+      class="fade-in text-shadow"
+      in:prescript={{}}
+      onintroend={() => (animationState = "prescript_finished")}
+    >
       {text}
     </p>
   {/if}
-  {#if visibleDone}
+  {#if animationState === "prescript_finished"}
     <p class="prescript-meta fade-in">
       ID: {rumbleSeed} - {new Date().getUTCFullYear()}/{new Date().getUTCMonth() +
         1}/{new Date().getUTCDate()}
@@ -199,12 +258,12 @@
   <p
     class="fade-in text-shadow"
     in:prescript={{}}
-    onintrostart={() => (visibleDone = false)}
-    onintroend={() => (visibleDone = true)}
+    onintrostart={() => (animationState = "showing_prescript")}
+    onintroend={() => (animationState = "prescript_finished")}
   >
     {text}
   </p>
-  {#if visibleDone}
+  {#if animationState === "prescript_finished"}
     <p class="prescript-meta fade-in">
       ID: {rumbleSeed}
     </p>
@@ -216,18 +275,25 @@
       &gt;&gt;&gt;
     </button>
   {/if}
-{:else if inputtingName}
+{:else if prescriptState === "name_input" || prescriptState === "name_input_transient"}
   <div class="name-input">
     <label>
       Name
       <br />
       <input class="fade-in" type="text" bind:value={name} />
     </label>
-    <button class="receive text-shadow" onclick={submitName} disabled={name.trim() === ""}>
-      <div class="button-arrow-left">&gt;</div>
-      SUBMIT
-      <div class="button-arrow-right">&lt;</div>
-    </button>
+    <div class="button-group">
+      <button class="receive text-shadow" onclick={cancelName}>
+        <div class="button-arrow-left">&gt;</div>
+        CANCEL
+        <div class="button-arrow-right">&lt;</div>
+      </button>
+      <button class="receive text-shadow" onclick={submitName} disabled={name.trim() === ""}>
+        <div class="button-arrow-left">&gt;</div>
+        SUBMIT
+        <div class="button-arrow-right">&lt;</div>
+      </button>
+    </div>
   </div>
 {:else}
   <div class="prescript-options">
@@ -236,10 +302,23 @@
       INSTANT
       <div class="button-arrow-right">&lt;</div>
     </button>
-    <button class="receive text-shadow" onclick={() => showSeeded()}>
+    <button class="receive daily-button text-shadow" onclick={() => showSeeded()}>
       <div class="button-arrow-left">&gt;</div>
       DAILY
       <div class="button-arrow-right">&lt;</div>
+      {#if browser && prescriptState === "main_menu"}
+        <div
+          class="time-popup"
+          class:new={relativeLastOpened === null}
+          class:fade-in={initial_load}
+        >
+          {#if relativeLastOpened}
+            IN {relativeLastOpened}
+          {:else}
+            NEW
+          {/if}
+        </div>
+      {/if}
     </button>
     <button class="receive text-shadow" onclick={() => showSeeded(true)}>
       <div class="button-arrow-left">&gt;</div>
@@ -321,8 +400,51 @@
     }
   }
 
+  .daily-button {
+    anchor-name: --daily-button;
+  }
+  .time-popup {
+    position: absolute;
+    position-anchor: --daily-button;
+    position-area: inline-end center;
+    padding: 0.25em 0.25em 0.125em 0.25em;
+    margin-left: -0.25rem;
+    background-color: var(--background-main);
+    color: var(--text);
+    font-size: 0.875rem;
+    line-height: 1;
+    font-family: monospace;
+    text-align: center;
+    user-select: none;
+    translate: 0 -2px;
+    opacity: 0.8;
+    --opacity: 0.8;
+
+    &.new {
+      background-color: var(--background-secondary);
+      opacity: 1;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 0.35em;
+      height: 0.5em;
+      rotate: 45deg;
+      translate: -50% -50%;
+      z-index: -1;
+      background-color: inherit;
+    }
+  }
+
   .name-line {
     margin-bottom: 0.5em;
+  }
+
+  .button-group {
+    display: flex;
   }
 
   .proceed {
@@ -363,7 +485,7 @@
       opacity: 0.2;
     }
     to {
-      opacity: 1;
+      opacity: var(--opacity, 1);
     }
   }
   .prescript-meta {
