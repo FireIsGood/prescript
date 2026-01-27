@@ -962,13 +962,15 @@ function getItem(rng: RNG, existingArticle: boolean = false, plural: boolean = f
   }
 
   // Add article
-  let prefixArticle = "";
-  if ("aeiou".split("").includes(item[0])) {
-    prefixArticle = "an";
-  } else {
-    prefixArticle = "a";
+  if (!plural) {
+    let prefixArticle = "";
+    if ("aeiou".split("").includes(item[0])) {
+      prefixArticle = "an";
+    } else {
+      prefixArticle = "a";
+    }
+    item = prefixArticle + " " + item;
   }
-  item = prefixArticle + " " + item;
 
   return item;
 }
