@@ -3,7 +3,6 @@
   import { remap } from "$lib/util";
   import { onMount } from "svelte";
   import { fade } from "svelte/transition";
-  import { getPrescript } from "./city-rumbles";
 
   // Individual droplets. xy are positions from 0 to 1 like a shader.
   type Raindrop = {

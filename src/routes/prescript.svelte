@@ -6,7 +6,7 @@
   import beepStartSrc from "$lib/assets/beepstart.mp3";
   import beepRepeatSrc from "$lib/assets/beep.mp3";
   import buttonPressSrc from "$lib/assets/button.mp3";
-  import { getPrescript, type RumbleType } from "./city-rumbles";
+  import { getPrescript, type RumbleType } from "$lib/city-rumbles";
   import { browser } from "$app/environment";
   import { remap } from "$lib/util";
 
