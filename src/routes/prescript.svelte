@@ -9,7 +9,7 @@
   import buttonSecondarySrc from "$lib/assets/button_secondary.mp3";
   import { getPrescript, type RumbleType } from "$lib/city-rumbles";
   import { browser } from "$app/environment";
-  import { remap, typewriter } from "$lib/util";
+  import { remap } from "$lib/util";
 
   type PrescriptState = [
     //
