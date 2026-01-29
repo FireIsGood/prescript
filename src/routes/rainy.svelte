@@ -128,14 +128,15 @@
       ]
     ].map((c) => c.map(screenSpace));
 
+    const lineSpeed = 0.12;
+    const lineLengthMult = Math.sqrt(ctx.canvas.clientWidth + ctx.canvas.clientHeight) / 30;
+    const offsetSize = 5830;
     ctx.lineWidth = 2;
     ctx.globalAlpha = 0.25;
     ctx.shadowBlur = 9;
     ctx.shadowColor = "#4a7a9640";
     ctx.strokeStyle = "#333f58";
-    ctx.setLineDash([1200, 8800]);
-    const lineSpeed = 0.12;
-    const offsetSize = 5830;
+    ctx.setLineDash([700 * lineLengthMult, 8800]);
     for (let i = 0; i < curves.length; i++) {
       const curve = curves[i];
       ctx.lineDashOffset = -_clock * lineSpeed + i * offsetSize - 2800;
