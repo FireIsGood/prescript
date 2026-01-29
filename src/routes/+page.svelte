@@ -92,7 +92,7 @@
 
 <style>
   .top-section {
-    margin-top: min(30svh, 75vw);
+    margin-top: min(30svh, 55vw);
     display: flex;
   }
 
