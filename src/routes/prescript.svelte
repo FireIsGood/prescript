@@ -30,10 +30,12 @@
 
   let {
     forceText,
-    forceID
+    forceID,
+    onLoading
   }: {
     forceText?: string;
     forceID?: string;
+    onLoading?: Function;
   } = $props();
   let name: string = $state("");
   let text: string = $state("");
@@ -210,6 +212,7 @@
     name = seed ?? "";
     visible = true;
     animationState = "loading";
+    onLoading?.();
   }
 
   function resetPrescript() {
@@ -378,7 +381,7 @@
     }
 
     &:disabled {
-      opacity: 0.4;
+      opacity: 0.2;
       cursor: not-allowed;
     }
   }

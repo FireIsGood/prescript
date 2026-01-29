@@ -37,9 +37,17 @@
     localStorage.removeItem("LAST_OPENED");
   }
 
+  function flashLogo() {
+    flashLogoVisible = false;
+    requestAnimationFrame(() => {
+      flashLogoVisible = true;
+    });
+  }
+
   let secretMenuVisible: boolean = $state(false);
   let forceText: string = $state("");
   let forceID: string = $state("");
+  let flashLogoVisible: boolean = $state(false);
 </script>
 
 <section class="top-section">
@@ -55,6 +63,9 @@
             style={`--delay: -${((i + 1) / 4) * 3600}ms`}
           />
         {/each}
+        {#if flashLogoVisible}
+          <img src={indexLogo} alt="Index Logo" class="center-image flash-image" />
+        {/if}
       </div>
     </button>
   </div>
@@ -86,7 +97,7 @@
 </section>
 <section>
   <div class="prescript-text">
-    <Prescript {forceText} {forceID} />
+    <Prescript {forceText} {forceID} onLoading={flashLogo} />
   </div>
 </section>
 
@@ -134,6 +145,22 @@
     }
     100% {
       scale: 1.35;
+      opacity: 0;
+    }
+  }
+
+  .flash-image {
+    animation: flash 800ms ease-out forwards;
+    mix-blend-mode: hard-light;
+    z-index: -1;
+  }
+  @keyframes flash {
+    0% {
+      scale: 1;
+      opacity: 0.75;
+    }
+    100% {
+      scale: 1.2;
       opacity: 0;
     }
   }
