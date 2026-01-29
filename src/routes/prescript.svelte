@@ -213,7 +213,7 @@
   }
 
   function resetPrescript() {
-    buttonPrimary.play();
+    buttonSecondary.play();
     visible = false;
     prescriptState = "main_menu";
   }
