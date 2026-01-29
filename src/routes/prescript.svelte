@@ -415,6 +415,7 @@
     position: absolute;
     position-anchor: --daily-button;
     position-area: inline-end center;
+    position-visibility: no-overflow;
     padding: 0.25em 0.25em 0.125em 0.25em;
     margin-left: -0.25rem;
     background-color: var(--background-main);
