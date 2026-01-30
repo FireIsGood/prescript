@@ -590,7 +590,7 @@ function getConditionGame(rng: RNG): string {
     ` until you ${gameResult} ${numberLarge} times`,
     ` so long as you can see ${item}`,
     ` until you misplace ${item}`,
-    ` while your ${organ} still work`,
+    ` while your ${organ} still works`,
     ` until your ${organ} gives out`,
     ` for ${duration}`
   ];
@@ -604,6 +604,7 @@ function getConditionDuration(rng: RNG): string {
   const itemNoArticle = getItem(rng, true);
   const itemPlural = getItem(rng, false, true);
   const itemMaybePlural = rng() < 0.5 ? item : itemPlural;
+  const clothing = pickList(rng(), clothes);
   const person = getPerson(rng);
   const organ = pickList(rng(), organs);
   const sense = pickList(rng(), senses);
@@ -627,7 +628,7 @@ function getConditionDuration(rng: RNG): string {
     `you see ${person}`,
     `you see ${itemMaybePlural}`,
     `you see your first ${itemNoArticle}`,
-    `you misplace your ${clothes}`,
+    `you misplace your ${clothing}`,
     `you still hate ${itemPlural}`,
     `you still ${sense} ${itemMaybePlural}`,
     `${person} notices`
